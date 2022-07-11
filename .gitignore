@@ -1,3 +1,4 @@
 *.pyc
 *.fit
 *.fits
+__pycache__/
