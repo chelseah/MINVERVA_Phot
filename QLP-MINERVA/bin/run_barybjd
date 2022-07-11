@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+from barycorrpy import get_BC_vel
+from barycorrpy import utc_tdb
+from astropy.time import Time
+
+def runbcv(jdutc,ra,dec,lat=-27.7977,longi=151.8554,alt=682):
+    bcvlist,bjdtdblist = [],[]
+
+    for i in range(len(jdutc)):
+    
+        bcv = get_BC_vel(JDUTC=jdutc[i], ra=ra[i], dec=dec[i],lat=lat, longi=longi, alt=alt,ephemeris='de405.bsp')[0][0]
+    
+        JDUTC = Time(jdutc[i], format='jd', scale='utc')
+        bjdtdb = utc_tdb.JDUTC_to_BJDTDB(JDUTC,ra=ra[i] ,dec=dec[i], lat=lat, longi=longi, alt=alt)[0][0]
+
+        bcvlist.append(bcv)
+        bjdtdblist.append(bjdtdb)
+        
+    return bcvlist,bjdtdblist
+
+
+if __name__ == "__main__":
+    import time,os
+    import numpy as np
+    
+    while True:
+        if os.path.exists('jdrequest_file'):
+            try:
+                jdrequest_file = np.loadtxt('jdrequest_file')
+                print(jdrequest_file)
+                
+                if len(np.shape(jdrequest_file)) == 1:
+                    jdrequest_file = np.array([jdrequest_file])
+                jd,ra,dec = jdrequest_file[:,0],jdrequest_file[:,1],jdrequest_file[:,2]
+                bcv,bjd = runbcv(jd,ra,dec)
+                np.savetxt('bcv_bjd.out',np.transpose(np.array([bcv,bjd])),fmt='%.10f')
+
+            except IndexError:
+                print("index error: Could not recognise jdrequest_file format, please have inputs as jd ra dec, space separated")
+                
+        time.sleep(1)
+
+
+        
+    
+    
